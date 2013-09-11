@@ -110,39 +110,57 @@ def depthFirstSearch(problem):
 
     while not problem.isGoalState(curState):
         
-       # # If we have no places to go from the current state, backtrack.
-       # successors = set([x[0] for x in problem.getSuccessors(curState)])
-       # while not successors - visited:
-       #     fringeStack.pop()
-       #     result.pop()
-       #     curState = fringeStack.top()[0]
-       #     successors = set([x[0] for x in problem.getSuccessors(curState)])
-       #     if successors - visited:
-       #         result.append(fringeStack.top())
+        # If we have no places to go from the current state, backtrack.
+        successors = set([x[0] for x in problem.getSuccessors(curState)])
+        while not successors - visited:
+            fringeStack.pop()
+            result.pop()
+            curState = fringeStack.top()[0]
+            successors = set([x[0] for x in problem.getSuccessors(curState)])
+            if successors - visited:
+                result.append(fringeStack.top())
 
-       # # If we haven't visited a state before, push it onto our stack.
-       # for loc,direction,_ in problem.getSuccessors(curState):
-       #     if loc not in visited:
-       #         fringeStack.push((loc,direction))
+        # If we haven't visited a state before, push it onto our stack.
+        for loc,direction,_ in problem.getSuccessors(curState):
+            if loc not in visited:
+                fringeStack.push((loc,direction))
 
-       # curState = fringeStack.top()[0]
+        curState = fringeStack.top()[0]
 
-       # # add the top of the fringe stack to our lists
-       # result.append(fringeStack.top()) # Add the state tuple and direction
-       # visited.add(fringeStack.top()[0]) # Add only the state tuple
+        # add the top of the fringe stack to our lists
+        result.append(fringeStack.top()) # Add the state tuple and direction
+        visited.add(fringeStack.top()[0]) # Add only the state tuple
 
 
-        print "Directions List: ", fringeStack.list
-        print "Result list : ", result
-        print "Visited List : ", visited
-        print "\n\n"
+    #    print "Directions List: ", fringeStack.list
+    #    print "Result list : ", result
+    #    print "Visited List : ", visited
+    #    print "\n\n"
     return [x[1] for x in result]
 
 def breadthFirstSearch(problem):
     """
     Search the shallowest nodes in the search tree first.
     """
-    "*** YOUR CODE HERE ***"
+
+    class Node:
+        """
+        Each state has attached to it the position, direction, and path
+        i.e. [(1,2),'West', [(0,0),(1,0),(1,1),(1,2)]]
+        """
+        def __init__(self,pos,direction,path):
+            self.list[0] = self
+            self.list[1] = direction
+            self.list[2] = path
+    
+    # Initialize variables
+    fringeQueue = Queue()
+    result = []
+    curState = problem.getStartState()
+
+    #while not problem.isGoalState(curState)
+    
+
     util.raiseNotDefined()
 
 def uniformCostSearch(problem):
