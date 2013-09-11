@@ -74,6 +74,12 @@ def tinyMazeSearch(problem):
     w = Directions.WEST
     return  [s,s,w,s,w,w,s,w]
 
+def top(list):
+    """
+    Utility function for returning the last element in a list.
+    """ 
+    return list[len(list)-1]
+
 def depthFirstSearch(problem):
     """
     Search the deepest nodes in the search tree first
@@ -89,7 +95,45 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    print "Start:", problem.getStartState()
+    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
+    print "Start's successors:", problem.getSuccessors(problem.getStartState())
+    #print "Dict --", problem.__dict__
+    #print "Visited: ", problem._visited
+
+    # Initialize variables
+    fringeStack = util.Stack();
+    visited = set([]) # List of visited nodes
+    visited.add(problem.getStartState());
+    result = [] # List of nodes that will be our final path
+    curState = problem.getStartState();
+
+    while not problem.isGoalState(curState):
+        
+        # If we have no places to go from the current state, backtrack.
+        successors = set([x[0] for x in problem.getSuccessors(curState)])
+        while not successors - visited:
+            fringeStack.pop()
+            result.pop()
+            curState = fringeStack.top()[0]
+            successors = set([x[0] for x in problem.getSuccessors(curState)])
+
+        # If we haven't visited a state before, push it onto our stack.
+        for loc,direction,_ in problem.getSuccessors(curState):
+            if loc not in visited:
+                fringeStack.push((loc,direction))
+
+        curState = fringeStack.top()[0]
+
+        # add the top of the fringe stack to our lists
+        result.append(fringeStack.top()) # Add the state tuple and direction
+        visited.add(fringeStack.top()[0]) # Add only the state tuple
+
+
+        print "Directions List: ", fringeStack.list
+        print "Result list : ", result
+        print "Visited List : ", visited
+    return [x[1] for x in result]
 
 def breadthFirstSearch(problem):
     """
