@@ -134,9 +134,10 @@ class Node:
     to this state.
     Each state has attached to it the position and path
     """
-    def __init__(self,state,path):
+    def __init__(self,state,path,cost=0):
         self.mState = state
         self.mPath = path
+        self.mCost = cost
 
 
 def breadthFirstSearch(problem):
@@ -159,6 +160,7 @@ def breadthFirstSearch(problem):
             if edge[0] not in visited:
                 newState = Node(edge[0],curState.mPath + [edge[1]])
                 fringeQueue.push(newState)
+                visited.add(edge[0])
 
 
 def uniformCostSearch(problem):
@@ -176,8 +178,9 @@ def uniformCostSearch(problem):
             return curState.mPath
         for edge in problem.getSuccessors(curState.mState):
             if edge[0] not in visited:
-                newState = Node(edge[0],curState.mPath + [edge[1]])
-                fringeQueue.push(newState,edge[2])
+                newState = Node(edge[0],curState.mPath + [edge[1]], curState.mCost + edge[2])
+                fringeQueue.push(newState,newState.mCost)
+                visited.add((edge[0],newState.mCost))
 
 def nullHeuristic(state, problem=None):
     """
@@ -202,6 +205,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
             return curState.mPath
         for edge in problem.getSuccessors(curState.mState):
             if edge[0] not in visited:
+                visited.add(edge[0])
                 newState = Node(edge[0],curState.mPath + [edge[1]])
                 fringeQueue.push(newState,edge[2] + heuristic(newState.mState,problem))
 
