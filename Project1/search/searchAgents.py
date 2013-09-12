@@ -262,6 +262,21 @@ def euclideanHeuristic(position, problem, info={}):
 #####################################################
 # This portion is incomplete.  Time to write code!  #
 #####################################################
+class State:
+    """
+    Contains a representation of a state.
+    Overrides the equality method for goal testing purposes
+    and the hashing function for use within dicts and sets
+    """
+    def __init__(self, loc, cornersVisited):
+        self.mLoc = loc
+        self.mVisited = cornersVisited
+    def __eq__(self, other):
+        return (isinstance(other,self.__class__)
+            and self.__dict__ == other.__dict__
+            and self.mLoc == other.mLoc)
+    def __hash__(self):
+        return self.mLoc.__hash__() 
 
 class CornersProblem(search.SearchProblem):
     """
@@ -269,21 +284,6 @@ class CornersProblem(search.SearchProblem):
 
     You must select a suitable state space and successor function
     """
-    class State:
-        """
-        Contains a representation of a state.
-        Overrides the equality method for goal testing purposes
-        and the hashing function for use within dicts and sets
-        """
-        def __init__(self, loc, cornersVisited):
-            self.mLoc = loc
-            self.mVisited = cornersVisited
-        def __eq__(self, other):
-            return (isinstance(other,self.__class__)
-                and self.__dict__ == other.__dict__
-                and self.mLoc == other.mLoc)
-        def __hash__(self):
-            return self.mLoc.__hash__() 
 
     def __init__(self, startingGameState):
         """
@@ -308,7 +308,7 @@ class CornersProblem(search.SearchProblem):
         # Define the starting state
         # A given state is defined by pacman's position and a map from corners to booleans
         # representing whether or not he has touched that corner before.
-        self.startState = self.State(self.startingPosition, self.cornersVisited)
+        self.startState = State(self.startingPosition, self.cornersVisited)
 
     def getStartState(self):
         "Returns the start state (in your state space, not the full Pacman state space)"
@@ -355,7 +355,7 @@ class CornersProblem(search.SearchProblem):
                 if (nextx,nexty) in newVisitedMap : 
                     newVisitedMap[(nextx,nexty)] = True
                 # Add a new State object with the updated state and direction
-                successors.append((self.State((nextx,nexty),newVisitedMap), 
+                successors.append((State((nextx,nexty),newVisitedMap), 
                     action,
                     1))
 
@@ -393,7 +393,32 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    heuristic = 0
+    minDist = 9999999
+    for x in state.mVisited:
+        if state.mVisited[x] == False:
+            xy1 = state.mLoc
+            xy2 = x
+            manhattan = abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
+            if  manhattan < minDist:
+                minDist = manhattan
+                minLoc = x
+    if not minDist == 9999999:
+        heuristic += minDist
+
+    maxX,maxY = corners[3]
+    maxSide = max(maxX,maxY)
+    minSide = min(maxX,maxY)
+    if state.mVisited.values().count(False) == 4:
+        heuristic += 2* minSide + maxSide
+    elif state.mVisited.values().count(False) == 3:
+        heuristic += minSide + maxSide
+    elif state.mVisited.values().count(False) == 2:
+        heuristic += minSide
+
+            
+            
+    return heuristic # Default to trivial solution
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
