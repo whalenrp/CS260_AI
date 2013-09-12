@@ -273,13 +273,17 @@ class CornersProblem(search.SearchProblem):
         """
         Contains a representation of a state.
         Overrides the equality method for goal testing purposes
+        and the hashing function for use within dicts and sets
         """
         def __init__(self, loc, cornersVisited):
             self.mLoc = loc
             self.mVisited = cornersVisited
         def __eq__(self, other):
             return (isinstance(other,self.__class__)
-                and self.__dict__ == other.__dict__)
+                and self.__dict__ == other.__dict__
+                and self.mLoc == other.mLoc)
+        def __hash__(self):
+            return self.mLoc.__hash__() 
 
     def __init__(self, startingGameState):
         """
