@@ -94,17 +94,11 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
-    "*** YOUR CODE HERE ***"
-    print "Start:", problem.getStartState()
-    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
-    print "Start's successors:", problem.getSuccessors(problem.getStartState())
-    #print "Dict --", problem.__dict__
-    #print "Visited: ", problem._visited
 
     # Initialize variables
     fringeStack = util.Stack();
-    visited = set([]) # List of visited nodes
-    visited.add(problem.getStartState());
+    visited = set([]) # List of visited positions
+    visited.add(problem.getStartState()[0]);
     result = [] # List of nodes that will be our final path
     curState = problem.getStartState();
 
@@ -132,41 +126,58 @@ def depthFirstSearch(problem):
         visited.add(fringeStack.top()[0]) # Add only the state tuple
 
 
-    #    print "Directions List: ", fringeStack.list
-    #    print "Result list : ", result
-    #    print "Visited List : ", visited
-    #    print "\n\n"
     return [x[1] for x in result]
+
+class Node:
+    """
+    Node class for containing a given state and the path from the start state 
+    to this state.
+    Each state has attached to it the position and path
+    """
+    def __init__(self,state,path):
+        self.mState = state
+        self.mPath = path
+
 
 def breadthFirstSearch(problem):
     """
     Search the shallowest nodes in the search tree first.
     """
 
-    class Node:
-        """
-        Each state has attached to it the position, direction, and path
-        i.e. [(1,2),'West', [(0,0),(1,0),(1,1),(1,2)]]
-        """
-        def __init__(self,pos,direction,path):
-            self.list[0] = self
-            self.list[1] = direction
-            self.list[2] = path
-    
     # Initialize variables
-    fringeQueue = Queue()
-    result = []
-    curState = problem.getStartState()
+    fringeQueue = util.Queue()
+    node = Node(problem.getStartState(),[])
+    fringeQueue.push(node)
+    visited = set([]) # List of visited positions
 
-    #while not problem.isGoalState(curState)
-    
+    while not fringeQueue.isEmpty():
+        curState = fringeQueue.pop()
+        visited.add(curState.mState);
+        if problem.isGoalState(curState.mState):
+            return curState.mPath
+        for edge in problem.getSuccessors(curState.mState):
+            if edge[0] not in visited:
+                newState = Node(edge[0],curState.mPath + [edge[1]])
+                fringeQueue.push(newState)
 
-    util.raiseNotDefined()
 
 def uniformCostSearch(problem):
     "Search the node of least total cost first. "
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Initialize variables
+    fringeQueue = util.PriorityQueue()
+    node = Node(problem.getStartState(),[])
+    fringeQueue.push(node,0)
+    visited = set([]) # List of visited positions
+
+    while not fringeQueue.isEmpty():
+        curState = fringeQueue.pop()
+        visited.add(curState.mState);
+        if problem.isGoalState(curState.mState):
+            return curState.mPath
+        for edge in problem.getSuccessors(curState.mState):
+            if edge[0] not in visited:
+                newState = Node(edge[0],curState.mPath + [edge[1]])
+                fringeQueue.push(newState,edge[2])
 
 def nullHeuristic(state, problem=None):
     """
@@ -178,8 +189,21 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     "Search the node that has the lowest combined cost and heuristic first."
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Initialize variables
+    fringeQueue = util.PriorityQueue()
+    node = Node(problem.getStartState(),[])
+    fringeQueue.push(node,0 + heuristic(node.mState,problem))
+    visited = set([]) # List of visited positions
 
+    while not fringeQueue.isEmpty():
+        curState = fringeQueue.pop()
+        visited.add(curState.mState);
+        if problem.isGoalState(curState.mState):
+            return curState.mPath
+        for edge in problem.getSuccessors(curState.mState):
+            if edge[0] not in visited:
+                newState = Node(edge[0],curState.mPath + [edge[1]])
+                fringeQueue.push(newState,edge[2] + heuristic(newState.mState,problem))
 
 # Abbreviations
 bfs = breadthFirstSearch

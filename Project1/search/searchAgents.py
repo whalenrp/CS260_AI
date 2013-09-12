@@ -269,6 +269,18 @@ class CornersProblem(search.SearchProblem):
 
     You must select a suitable state space and successor function
     """
+    class State:
+        """
+        Contains a representation of a state.
+        Overrides the equality method for goal testing purposes
+        """
+        def __init__(self, loc, cornersVisited):
+            self.mLoc = loc
+            self.mVisited = cornersVisited
+        def __eq__(self, other):
+            return (isinstance(other,self.__class__)
+                and self.__dict__ == other.__dict__)
+            
 
     def __init__(self, startingGameState):
         """
@@ -286,15 +298,26 @@ class CornersProblem(search.SearchProblem):
         # in initializing the problem
         "*** YOUR CODE HERE ***"
 
+        
+        # Create a mapping from corners to whether they are visited
+        self.cornersVisited = dict(zip(self.corners, [False]*4))
+
+        # Define the starting state
+        # A given state is defined by pacman's position and a map from corners to booleans
+        # representing whether or not he has touched that corner before.
+        self.startState = self.State(self.startingPosition, self.cornersVisited)
+
     def getStartState(self):
         "Returns the start state (in your state space, not the full Pacman state space)"
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.startState
 
     def isGoalState(self, state):
         "Returns whether this search state is a goal state of the problem"
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if state.mLoc in state.mVisited : 
+            state.mVisited[state.mLoc] = True
+        return reduce( lambda x, y: x and y, state.mVisited.values())
 
     def getSuccessors(self, state):
         """
@@ -318,6 +341,18 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            x,y = currentPosition
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall:
+                # Create a copy of the previous state's visited map
+                # and update any entries.
+                newVisitedMap = state.mVisited.copy()
+                if (nextx,nexty) in newVisitedMap : 
+                    newVisitedMap[(nextx,nexty)] = True
+                # Add a new State object with the new location and updated map
+                successors.push(State((nextx,nexty),newVisitedMap))
 
         self._expanded += 1
         return successors
