@@ -169,18 +169,25 @@ def uniformCostSearch(problem):
     fringeQueue = util.PriorityQueue()
     node = Node(problem.getStartState(),[])
     fringeQueue.push(node,0)
-    visited = set([]) # List of visited positions
+    visited = dict([]) # List of visited positions
+    visited[problem.getStartState()] = 0
 
     while not fringeQueue.isEmpty():
         curState = fringeQueue.pop()
-        visited.add(curState.mState);
+        # While this path is not our cheapest path to this node,
+        while curState.mCost != visited[curState.mState] :
+            # Discard it and move on.
+            curState = fringeQueue.pop()
+
         if problem.isGoalState(curState.mState):
             return curState.mPath
         for edge in problem.getSuccessors(curState.mState):
+            newState = Node(edge[0],curState.mPath + [edge[1]], curState.mCost + edge[2])
             if edge[0] not in visited:
-                newState = Node(edge[0],curState.mPath + [edge[1]], curState.mCost + edge[2])
-                fringeQueue.push(newState,newState.mCost)
-                visited.add((edge[0],newState.mCost))
+                visited[edge[0]] = newState.mCost
+            elif newState.mCost < visited[edge[0]]:
+                visited[edge[0]] = newState.mCost
+            fringeQueue.push(newState,newState.mCost)
 
 def nullHeuristic(state, problem=None):
     """
@@ -192,22 +199,47 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     "Search the node that has the lowest combined cost and heuristic first."
     "*** YOUR CODE HERE ***"
+    ## Initialize variables
+    #fringeQueue = util.PriorityQueue()
+    #node = Node(problem.getStartState(),[])
+    #fringeQueue.push(node,0 + heuristic(node.mState,problem))
+    #visited = set([]) # List of visited positions
+
+    #while not fringeQueue.isEmpty():
+    #    curState = fringeQueue.pop()
+    #    visited.add(curState.mState);
+    #    if problem.isGoalState(curState.mState):
+    #        return curState.mPath
+    #    for edge in problem.getSuccessors(curState.mState):
+    #        if edge[0] not in visited:
+    #            visited.add(edge[0])
+    #            newState = Node(edge[0],curState.mPath + [edge[1]])
+    #            fringeQueue.push(newState,edge[2] + heuristic(newState.mState,problem))
     # Initialize variables
     fringeQueue = util.PriorityQueue()
     node = Node(problem.getStartState(),[])
-    fringeQueue.push(node,0 + heuristic(node.mState,problem))
-    visited = set([]) # List of visited positions
+    fringeQueue.push(node,0)
+    visited = dict([]) # List of visited positions
+    visited[problem.getStartState()] = 0
 
     while not fringeQueue.isEmpty():
         curState = fringeQueue.pop()
-        visited.add(curState.mState);
+        # While this path is not our cheapest path to this node,
+        while curState.mCost != visited[curState.mState] :
+            # Discard it and move on.
+            curState = fringeQueue.pop()
+
         if problem.isGoalState(curState.mState):
             return curState.mPath
         for edge in problem.getSuccessors(curState.mState):
+            newState = Node(edge[0],
+                curState.mPath + [edge[1]], 
+                curState.mCost + edge[2] + heuristic(edge[0],problem))
             if edge[0] not in visited:
-                visited.add(edge[0])
-                newState = Node(edge[0],curState.mPath + [edge[1]])
-                fringeQueue.push(newState,edge[2] + heuristic(newState.mState,problem))
+                visited[edge[0]] = newState.mCost
+            elif newState.mCost < visited[edge[0]]:
+                visited[edge[0]] = newState.mCost
+            fringeQueue.push(newState,newState.mCost)
 
 # Abbreviations
 bfs = breadthFirstSearch
