@@ -280,7 +280,6 @@ class CornersProblem(search.SearchProblem):
         def __eq__(self, other):
             return (isinstance(other,self.__class__)
                 and self.__dict__ == other.__dict__)
-            
 
     def __init__(self, startingGameState):
         """
@@ -341,7 +340,7 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
-            x,y = currentPosition
+            x,y = state.mLoc
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
@@ -351,8 +350,10 @@ class CornersProblem(search.SearchProblem):
                 newVisitedMap = state.mVisited.copy()
                 if (nextx,nexty) in newVisitedMap : 
                     newVisitedMap[(nextx,nexty)] = True
-                # Add a new State object with the new location and updated map
-                successors.push(State((nextx,nexty),newVisitedMap))
+                # Add a new State object with the updated state and direction
+                successors.append((self.State((nextx,nexty),newVisitedMap), 
+                    action,
+                    1))
 
         self._expanded += 1
         return successors

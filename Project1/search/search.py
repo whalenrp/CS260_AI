@@ -148,11 +148,11 @@ def breadthFirstSearch(problem):
     fringeQueue = util.Queue()
     node = Node(problem.getStartState(),[])
     fringeQueue.push(node)
-    visited = set([]) # List of visited positions
+    visited = [] # List of visited positions
 
     while not fringeQueue.isEmpty():
         curState = fringeQueue.pop()
-        visited.add(curState.mState);
+        visited.append(curState.mState);
         if problem.isGoalState(curState.mState):
             return curState.mPath
         for edge in problem.getSuccessors(curState.mState):
@@ -167,11 +167,11 @@ def uniformCostSearch(problem):
     fringeQueue = util.PriorityQueue()
     node = Node(problem.getStartState(),[])
     fringeQueue.push(node,0)
-    visited = set([]) # List of visited positions
+    visited = [] # List of visited positions
 
     while not fringeQueue.isEmpty():
         curState = fringeQueue.pop()
-        visited.add(curState.mState);
+        visited.append(curState.mState);
         if problem.isGoalState(curState.mState):
             return curState.mPath
         for edge in problem.getSuccessors(curState.mState):
@@ -193,11 +193,11 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     fringeQueue = util.PriorityQueue()
     node = Node(problem.getStartState(),[])
     fringeQueue.push(node,0 + heuristic(node.mState,problem))
-    visited = set([]) # List of visited positions
+    visited = [] # List of visited positions
 
     while not fringeQueue.isEmpty():
         curState = fringeQueue.pop()
-        visited.add(curState.mState);
+        visited.append(curState.mState);
         if problem.isGoalState(curState.mState):
             return curState.mPath
         for edge in problem.getSuccessors(curState.mState):
