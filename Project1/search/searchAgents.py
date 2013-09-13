@@ -394,48 +394,28 @@ def cornersHeuristic(state, problem):
 
     "*** YOUR CODE HERE ***"
     heuristic = 0
-    #minDist = 9999999
-    #minLoc = state.mLoc
-    ## Find the closest dot and it's manhattan distance
-    ## Any path will be >= the cost to that node first
-    #for x in state.mVisited:
-    #    if state.mVisited[x] == False:
-    #        xy1 = state.mLoc
-    #        xy2 = x
-    #        manhattan = abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
-    #        if  manhattan < minDist:
-    #            minDist = manhattan
-    #            minLoc = x
-    #if not minDist == 9999999:
-    #    heuristic += minDist
+    def manhattanDist(xy1,xy2):
+        #return ( (xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2 ) ** 0.5
+        return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
+        
+    # For the unvisited corners, find the furthest point and 
+    # closest point
+    remainingPellets = filter(lambda x: not state.mVisited[x], state.mVisited)
+    minManhattan = 9999
+    maxManhattan = 0
+    for x in remainingPellets:
+        curDist = manhattanDist(state.mLoc, x)
+        heuristic += curDist
+        if curDist > maxManhattan:
+            maxManhattan = curDist
+        if curDist < minManhattan:
+            minManhattan = curDist
 
-    #maxX,maxY = corners[3]
-    #
-    #assert maxX > 1, "The max corner isn't contained in corners[3]"
-    #assert maxY > 1, "The max corner isn't contained in corners[3]"
-    #maxSide = max(maxX,maxY)
-    #minSide = min(maxX,maxY)
-    #if state.mVisited.values().count(False) == 4:
-    #    # return the manhattan distance between 4 points, which will be 
-    #    # >= 2 n + m in an NxM matrix, n<=m
-    #    heuristic += 2* minSide + maxSide
-    #elif state.mVisited.values().count(False) == 3:
-    #    # return the total manhattan distance between three points, or the sum
-    #    # of m and n in an nxm matrix
-    #    heuristic += minSide + maxSide
-    #elif state.mVisited.values().count(False) == 2:
-    #    # find the manhattan distance between the two remaining points
-    #    remainingCorners = filter(lambda x: not state.mVisited[x] , state.mVisited)
-    #    xy1 = remainingCorners[0]
-    #    xy2 = remainingCorners[1]
-    #    heuristic += abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
-
-    #        
-    #        
-    #return heuristic # Default to trivial solution
-    
-    # return number of remaining pellets
-    return len(filter(lambda x: not state.mVisited[x], state.mVisited))
+   
+    if not len(remainingPellets) == 0:
+        return heuristic/len(remainingPellets)
+    else: # Avoid division by 0
+        return heuristic
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -526,7 +506,7 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    return len(foodGrid.asList())
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -554,7 +534,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.breadthFirstSearch(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -590,7 +570,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return state in self.food.asList()
 
 ##################
 # Mini-contest 1 #
