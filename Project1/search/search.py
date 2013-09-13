@@ -96,37 +96,28 @@ def depthFirstSearch(problem):
     """
 
     # Initialize variables
-    fringeStack = util.Stack();
     visited = set([]) # List of visited positions
-    visited.add(problem.getStartState()[0]);
-    result = [] # List of nodes that will be our final path
-    curState = problem.getStartState();
 
-    while not problem.isGoalState(curState):
+    def recurse(state):
+        """
+        This function returns a tuple of a list of directions
+        to the goal state from the current state and a boolean
+        indicating success or failure
+        (True, [path,to,goal])
+        """
+        if problem.isGoalState(state):
+            return (True,[])
+        visited.add(state)
+        for edge in problem.getSuccessors(state):
+            if edge[0] not in visited:
+                path = recurse(edge[0])
+                if path[0]:
+                    return (True,[edge[1]] + path[1])
+        return (False,[])
         
-        # If we have no places to go from the current state, backtrack.
-        successors = set([x[0] for x in problem.getSuccessors(curState)])
-        while not successors - visited:
-            fringeStack.pop()
-            result.pop()
-            curState = fringeStack.top()[0]
-            successors = set([x[0] for x in problem.getSuccessors(curState)])
-            if successors - visited:
-                result.append(fringeStack.top())
 
-        # If we haven't visited a state before, push it onto our stack.
-        for loc,direction,_ in problem.getSuccessors(curState):
-            if loc not in visited:
-                fringeStack.push((loc,direction))
+    return recurse(problem.getStartState())[1]
 
-        curState = fringeStack.top()[0]
-
-        # add the top of the fringe stack to our lists
-        result.append(fringeStack.top()) # Add the state tuple and direction
-        visited.add(fringeStack.top()[0]) # Add only the state tuple
-
-
-    return [x[1] for x in result]
 
 class Node:
     """
