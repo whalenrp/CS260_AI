@@ -262,6 +262,21 @@ def euclideanHeuristic(position, problem, info={}):
 #####################################################
 # This portion is incomplete.  Time to write code!  #
 #####################################################
+class State:
+    """
+    Contains a representation of a state.
+    Overrides the equality method for goal testing purposes
+    and the hashing function for use within dicts and sets
+    """
+    def __init__(self, loc, cornersVisited):
+        self.mLoc = loc
+        self.mVisited = cornersVisited
+    def __eq__(self, other):
+        return (isinstance(other,self.__class__)
+            and self.__dict__ == other.__dict__
+            and self.mLoc == other.mLoc)
+    def __hash__(self):
+        return self.mLoc.__hash__() 
 
 class CornersProblem(search.SearchProblem):
     """
@@ -286,15 +301,26 @@ class CornersProblem(search.SearchProblem):
         # in initializing the problem
         "*** YOUR CODE HERE ***"
 
+        
+        # Create a mapping from corners to whether they are visited
+        self.cornersVisited = dict(zip(self.corners, [False]*4))
+
+        # Define the starting state
+        # A given state is defined by pacman's position and a map from corners to booleans
+        # representing whether or not he has touched that corner before.
+        self.startState = State(self.startingPosition, self.cornersVisited)
+
     def getStartState(self):
         "Returns the start state (in your state space, not the full Pacman state space)"
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return self.startState
 
     def isGoalState(self, state):
         "Returns whether this search state is a goal state of the problem"
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        if state.mLoc in state.mVisited : 
+            state.mVisited[state.mLoc] = True
+        return reduce( lambda x, y: x and y, state.mVisited.values())
 
     def getSuccessors(self, state):
         """
@@ -318,6 +344,20 @@ class CornersProblem(search.SearchProblem):
             #   hitsWall = self.walls[nextx][nexty]
 
             "*** YOUR CODE HERE ***"
+            x,y = state.mLoc
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
+            if not hitsWall:
+                # Create a copy of the previous state's visited map
+                # and update any entries.
+                newVisitedMap = state.mVisited.copy()
+                if (nextx,nexty) in newVisitedMap : 
+                    newVisitedMap[(nextx,nexty)] = True
+                # Add a new State object with the updated state and direction
+                successors.append((State((nextx,nexty),newVisitedMap), 
+                    action,
+                    1))
 
         self._expanded += 1
         return successors
@@ -353,7 +393,29 @@ def cornersHeuristic(state, problem):
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
     "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    heuristic = 0
+    def manhattanDist(xy1,xy2):
+        #return ( (xy1[0] - xy2[0]) ** 2 + (xy1[1] - xy2[1]) ** 2 ) ** 0.5
+        return abs(xy1[0] - xy2[0]) + abs(xy1[1] - xy2[1])
+        
+    # For the unvisited corners, find the furthest point and 
+    # closest point
+    remainingPellets = filter(lambda x: not state.mVisited[x], state.mVisited)
+    minManhattan = 9999
+    maxManhattan = 0
+    for x in remainingPellets:
+        curDist = manhattanDist(state.mLoc, x)
+        heuristic += curDist
+        if curDist > maxManhattan:
+            maxManhattan = curDist
+        if curDist < minManhattan:
+            minManhattan = curDist
+
+   
+    if not len(remainingPellets) == 0:
+        return heuristic/len(remainingPellets)
+    else: # Avoid division by 0
+        return heuristic
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
@@ -444,7 +506,7 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    return 0
+    return len(foodGrid.asList())
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
@@ -472,7 +534,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.breadthFirstSearch(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -508,7 +570,7 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         x,y = state
 
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return state in self.food.asList()
 
 ##################
 # Mini-contest 1 #
