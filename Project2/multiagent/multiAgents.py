@@ -163,19 +163,24 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns a tuple containing a value and the associated action as determined
             by the maximum of possible actions for the given state.
             """
+            agentIndex = depth % numAgents
+            actions = gameState.getLegalActions(agentIndex);
 
-            if depth <= 1:
+            print "Pacman actions:", actions, " depth: ", depth, " index ", agentIndex
+            if depth <= 1 or len(actions) is 0:
                return (self.evaluationFunction(state), Directions.STOP)
         
-            agentIndex = depth % numAgents
             maxPair = (-999999,Directions.STOP)
-            for action in gameState.getLegalActions(agentIndex):
+            for action in actions:
+                
                 nextState = minState(
                         gameState.generateSuccessor(agentIndex,action),
                         depth-1)
+                print "value: ", nextState[0], " action: ", action
                 if maxPair[0] < nextState[0]:
                     maxPair = (nextState[0],action)
-            #print maxPair[1]
+                    
+                
             return maxPair
 
         def minState(state, depth):
@@ -183,14 +188,18 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns a tuple containing a value and the associated action as determined
             by the minimum of possible actions for the given state.
             """
-            if depth <= 1:
-               return (self.evaluationFunction(state), Directions.STOP)
-
             agentIndex = depth % numAgents
-            minPair = (999999,Directions.STOP)
-            for action in gameState.getLegalActions(depth % numAgents):
+            actions = gameState.getLegalActions(agentIndex)
+            
+            print "\tGhost ", agentIndex, " actions: ",  actions
+            if depth <= 1 or len(actions) is 0:
+                #print "VALUE: ", self.evaluationFunction(state)
+                return (self.evaluationFunction(state), Directions.STOP)
+
+            minPair = (999998,Directions.STOP)
+            for action in actions:
                 # If our next node is not pacman
-                if agentIndex is not 0:
+                if (agentIndex - 1) is not 0:
                     nextPair = minState(gameState.generateSuccessor(agentIndex,action),
                                         depth-1)
                 else:
@@ -202,8 +211,8 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return minPair
             
 
+        print numAgents;
         return maxState(gameState,self.depth*numAgents)[1]
-        #util.raiseNotDefined()
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -237,10 +246,29 @@ def betterEvaluationFunction(currentGameState):
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
-      DESCRIPTION: <write something here so we know what you did>
+      DESCRIPTION: (currentScore + 1/#pellets + 1/(sum_of_manhattan_to_pellets)) - whether or not a ghost is nearby
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    # Get #pellets
+    pellets = currentGameState.getFood()
+    numPellets = len(pellets)
+    
+    # Get sum of manhattan distances
+    currentPos = currentGameState.getPacmanPosition()
+    sumManhattan = 0
+    for pellet in pellets:
+        sumManhattan += util.manhattanDistance(currentPos, pellet)
+        
+    # Process ghost positions
+    score = 1
+    for ghostState in newGhostStates:
+        curGhostDist = util.manhattanDistance(ghostState.getPosition(), newPos)
+        if curGhostDist < 2:
+            score *= (-1)
+            break
+            
+    return (currentGameState.getScore() + (1.0)/numPellets + 1.0/(sumManhattan))- (score*1000)
+                
+    #return currentGameState.getScore()
 
 # Abbreviation
 better = betterEvaluationFunction
