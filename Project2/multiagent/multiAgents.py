@@ -157,13 +157,14 @@ class MinimaxAgent(MultiAgentSearchAgent):
         """
         "*** YOUR CODE HERE ***"
         numAgents = gameState.getNumAgents()
+        maxDepth = self.depth*numAgents
 
         def maxState(state, depth):
             """
             Returns a tuple containing a value and the associated action as determined
             by the maximum of possible actions for the given state.
             """
-            agentIndex = depth % numAgents
+            agentIndex = (maxDepth - depth) % numAgents
             actions = state.getLegalActions(agentIndex);
 
             if depth < 1 or state.isLose() or state.isWin():
@@ -186,7 +187,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             Returns a tuple containing a value and the associated action as determined
             by the minimum of possible actions for the given state.
             """
-            agentIndex = depth % numAgents
+            agentIndex = (maxDepth - depth) % numAgents
             actions = state.getLegalActions(agentIndex)
             
             if depth < 1 or state.isLose() or state.isWin():
@@ -194,7 +195,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
             if len(actions) is 0:
                 # If our next node is not pacman
-                if (agentIndex - 1) is not 0:
+                if (agentIndex + 1) is not numAgents:
                     return minState(state.generateSuccessor(agentIndex,Directions.STOP),depth-1)
                 else:
                     return maxState(state.generateSuccessor(agentIndex,Directions.STOP),depth-1)
@@ -203,7 +204,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
             minPair = (999998,Directions.STOP)
             for action in actions:
                 # If our next node is not pacman
-                if (agentIndex - 1) is not 0:
+                if (agentIndex + 1) is not numAgents:
                     nextPair = minState(state.generateSuccessor(agentIndex,action),depth-1)
                 else:
                     nextPair = maxState(state.generateSuccessor(agentIndex,action),depth-1)
@@ -240,7 +241,64 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        numAgents = gameState.getNumAgents()
+        maxDepth = self.depth*numAgents
+
+        def maxState(state, depth):
+            """
+            Returns a tuple containing a value and the associated action as determined
+            by the maximum of possible actions for the given state.
+            """
+            agentIndex = (maxDepth - depth) % numAgents
+            actions = state.getLegalActions(agentIndex);
+
+            if depth < 1 or state.isLose() or state.isWin():
+               return (self.evaluationFunction(state), Directions.STOP)
+
+            if len(actions) is 0:
+                return minState(state.generateSuccessor(agentIndex,Directions.STOP),depth-1)
+        
+            maxPair = (-999999,Directions.STOP)
+            for action in actions:
+                
+                nextState = minState(state.generateSuccessor(agentIndex,action),depth-1)
+                if maxPair[0] < nextState[0]:
+                    maxPair = (nextState[0],action)
+                    
+            return maxPair
+
+        def minState(state, depth):
+            """
+            Returns a tuple containing a value and the associated action as determined
+            by the minimum of possible actions for the given state.
+            """
+            agentIndex = (maxDepth - depth) % numAgents
+            actions = state.getLegalActions(agentIndex)
+            
+            if depth < 1 or state.isLose() or state.isWin():
+                return (self.evaluationFunction(state), Directions.STOP)
+
+            if len(actions) is 0:
+                # If our next node is not pacman
+                if (agentIndex + 1) is not numAgents:
+                    return minState(state.generateSuccessor(agentIndex,Directions.STOP),depth-1)
+                else:
+                    return maxState(state.generateSuccessor(agentIndex,Directions.STOP),depth-1)
+                    
+
+            totalChoicesValue = 0.0
+            for action in actions:
+                # If our next node is not pacman
+                if (agentIndex + 1) is not numAgents:
+                    nextPair = minState(state.generateSuccessor(agentIndex,action),depth-1)
+                else:
+                    nextPair = maxState(state.generateSuccessor(agentIndex,action),depth-1)
+
+                totalChoicesValue +=nextPair[0]
+            return (totalChoicesValue/len(actions), Directions.STOP)
+            
+
+        return maxState(gameState,self.depth*numAgents)[1]
 
 def betterEvaluationFunction(currentGameState):
     """
@@ -251,23 +309,24 @@ def betterEvaluationFunction(currentGameState):
     """
     # Get #pellets
     pellets = currentGameState.getFood()
-    numPellets = len(pellets)
+    numPellets = len(pellets.asList()) +1 # to prevent div by 0
     
     # Get sum of manhattan distances
     currentPos = currentGameState.getPacmanPosition()
-    sumManhattan = 0
-    for pellet in pellets:
+    sumManhattan = 1 # to prevent div by 0
+    for pellet in pellets.asList():
         sumManhattan += util.manhattanDistance(currentPos, pellet)
         
     # Process ghost positions
+    newGhostStates = currentGameState.getGhostStates()
     score = 1
     for ghostState in newGhostStates:
-        curGhostDist = util.manhattanDistance(ghostState.getPosition(), newPos)
-        if curGhostDist < 2:
+        curGhostDist = util.manhattanDistance(ghostState.getPosition(), currentPos)
+        if curGhostDist < 3:
             score *= (-1)
             break
             
-    return (currentGameState.getScore() + (1.0)/numPellets + 1.0/(sumManhattan))- (score*1000)
+    return (currentGameState.getScore() + (1.0)/numPellets + 1.0/(sumManhattan))+(score*1000)
                 
     #return currentGameState.getScore()
 
