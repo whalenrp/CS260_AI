@@ -166,15 +166,16 @@ class MinimaxAgent(MultiAgentSearchAgent):
             agentIndex = depth % numAgents
             actions = state.getLegalActions(agentIndex);
 
-            if depth <= 1 or len(actions) is 0:
+            if depth < 1 or state.isLose() or state.isWin():
                return (self.evaluationFunction(state), Directions.STOP)
+
+            if len(actions) is 0:
+                return minState(state.generateSuccessor(agentIndex,Directions.STOP),depth-1)
         
             maxPair = (-999999,Directions.STOP)
             for action in actions:
                 
-                nextState = minState(
-                        state.generateSuccessor(agentIndex,action),
-                        depth-1)
+                nextState = minState(state.generateSuccessor(agentIndex,action),depth-1)
                 if maxPair[0] < nextState[0]:
                     maxPair = (nextState[0],action)
                     
@@ -188,18 +189,24 @@ class MinimaxAgent(MultiAgentSearchAgent):
             agentIndex = depth % numAgents
             actions = state.getLegalActions(agentIndex)
             
-            if depth <= 1 or len(actions) is 0:
+            if depth < 1 or state.isLose() or state.isWin():
                 return (self.evaluationFunction(state), Directions.STOP)
+
+            if len(actions) is 0:
+                # If our next node is not pacman
+                if (agentIndex - 1) is not 0:
+                    return minState(state.generateSuccessor(agentIndex,Directions.STOP),depth-1)
+                else:
+                    return maxState(state.generateSuccessor(agentIndex,Directions.STOP),depth-1)
+                    
 
             minPair = (999998,Directions.STOP)
             for action in actions:
                 # If our next node is not pacman
                 if (agentIndex - 1) is not 0:
-                    nextPair = minState(state.generateSuccessor(agentIndex,action),
-                                        depth-1)
+                    nextPair = minState(state.generateSuccessor(agentIndex,action),depth-1)
                 else:
-                    nextPair = maxState(state.generateSuccessor(agentIndex,action),
-                                        depth-1)
+                    nextPair = maxState(state.generateSuccessor(agentIndex,action),depth-1)
 
                 if minPair[0] > nextPair[0]:
                     minPair = (nextPair[0],action)
