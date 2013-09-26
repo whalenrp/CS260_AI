@@ -226,7 +226,76 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        numAgents = gameState.getNumAgents()
+        maxDepth = self.depth*numAgents
+
+        def maxState(state, depth, alpha, beta):
+            """
+            Returns a tuple containing a value and the associated action as determined
+            by the maximum of possible actions for the given state.
+            """
+            agentIndex = (maxDepth - depth) % numAgents
+            actions = state.getLegalActions(agentIndex);
+
+            if depth < 1 or state.isLose() or state.isWin():
+               return (self.evaluationFunction(state), Directions.STOP)
+
+            if len(actions) is 0:
+                return minState(state.generateSuccessor(agentIndex,Directions.STOP),depth-1)
+        
+            maxPair = (-9999999,Directions.STOP)
+            for action in actions:
+                
+                nextState = minState(state.generateSuccessor(agentIndex,action),
+                                                             depth-1,alpha, beta)
+                if maxPair[0] < nextState[0]:
+                    maxPair = (nextState[0],action)
+                if maxPair[0] > beta:
+                    return maxPair
+                alpha = max(alpha, maxPair[0])
+                    
+            return maxPair
+
+        def minState(state, depth, alpha, beta):
+            """
+            Returns a tuple containing a value and the associated action as determined
+            by the minimum of possible actions for the given state.
+            """
+            agentIndex = (maxDepth - depth) % numAgents
+            actions = state.getLegalActions(agentIndex)
+            
+            if depth < 1 or state.isLose() or state.isWin():
+                return (self.evaluationFunction(state), Directions.STOP)
+
+            if len(actions) is 0:
+                # If our next node is not pacman
+                if (agentIndex + 1) is not numAgents:
+                    return minState(state.generateSuccessor(agentIndex,Directions.STOP),depth-1)
+                else:
+                    return maxState(state.generateSuccessor(agentIndex,Directions.STOP),depth-1)
+                    
+
+            minPair = (9999999,Directions.STOP)
+            for action in actions:
+                # If our next node is not pacman
+                if (agentIndex + 1) is not numAgents:
+                    nextPair = minState(state.generateSuccessor(agentIndex,action),
+                                                                depth-1,alpha,beta)
+                else:
+                    nextPair = maxState(state.generateSuccessor(agentIndex,action),
+                                                                depth-1,alpha,beta)
+
+                if minPair[0] > nextPair[0]:
+                    minPair = (nextPair[0],action)
+
+                if minPair[0] < alpha:
+                    return minPair
+                beta = min(beta, minPair[0])
+
+            return minPair
+            
+
+        return maxState(gameState,self.depth*numAgents,-999999,999999)[1]
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
@@ -325,10 +394,9 @@ def betterEvaluationFunction(currentGameState):
         if curGhostDist < 3:
             score *= (-1)
             break
-            
-    return (currentGameState.getScore() + (1.0)/numPellets + 1.0/(sumManhattan))+(score*1000)
+
+    return (currentGameState.getScore() + (1.0)/numPellets + 1.0/(sumManhattan))+(score*100)
                 
-    #return currentGameState.getScore()
 
 # Abbreviation
 better = betterEvaluationFunction
